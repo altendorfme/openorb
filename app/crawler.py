@@ -8,7 +8,9 @@ from typing import TypedDict
 from datetime import datetime
 from urllib.parse import urlparse
 import redis
-from config import config
+from config import load_config
+
+config = load_config()
 
 r = redis.Redis(host=config["redis_host"], port=6379, decode_responses=True)
 

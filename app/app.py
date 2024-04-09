@@ -5,10 +5,12 @@ import hashlib
 import json
 from flask import Flask, render_template, request
 import redis
-from config import config
+from config import load_config
 import crawler
 from microsearch import SearchEngine
 from apscheduler.schedulers.background import BackgroundScheduler
+
+config = load_config()
 
 r = redis.Redis(host=config["redis_host"], port=6379, decode_responses=True)
 
