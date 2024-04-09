@@ -1,0 +1,7 @@
+index.db
+config.toml
+
+__pycache__/
+.venv/
+
+.DS_Store

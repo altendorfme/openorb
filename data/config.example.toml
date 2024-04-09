@@ -1,0 +1,16 @@
+# Show at the top of the page.
+curator = "Orb Ponderer"
+curator_url = "https://pondering.orb"
+
+feeds = [
+    "http://cavegirlgames.blogspot.com/feeds/posts/default",
+    "https://tenfootpole.org/ironspike/?feed=rss2",
+    "http://questingblog.com/feed/",
+    "https://goblinpunch.blogspot.com/feeds/posts/default"
+]
+
+# In search results, only show posts with a score of at least this value
+score_threshold = 1
+
+# Usually "localhost", or "redis" if you're using Docker Compose
+redis_host = "redis"

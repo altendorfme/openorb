@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Feeds</h2>
+
+<p>This is a list of all the feeds that are being indexed by this instance of OpenOrb.</p>
+
+<ul id="feeds">
+    {% for feed in feeds %}
+        <li class="feed">
+            <a href="{{ feed.site_url }}">{{ feed.title }}</a> &ndash; <a href="{{ feed.feed_url }}">Feed link</a>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  openorb:
+    build: "./app"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data/
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"

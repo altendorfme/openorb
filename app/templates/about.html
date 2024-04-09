@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>About OpenOrb</h2>
+
+<p>OpenOrb is a curated search engine for Atom and RSS feeds.</p>
+
+<p>An OpenOrb instance is configured with <a href="/feeds">a list of feeds to
+search</a> - what was once called a blogroll - and indexes this list
+periodically. In this way, OpenOrb provides a window into the content a specific
+person or community cares about, with the benefit of making this content
+searchable and therefore more accessible.  OpenOrb is designed to be the
+opposite of Google and other black box, monolithic search engines - it's
+open source, configurable, personal, and predictable.</p>
+
+<p>OpenOrb uses an extremely simple search engine, mostly adapted from <a
+href="https://www.alexmolas.com/2024/02/05/a-search-engine-in-80-lines.html">Alex
+Molas's superb 'search engine in 80 lines of Python'</a>, which uses <a
+href="https://en.wikipedia.org/wiki/Okapi_BM25">BM25</a> and doesn't handle
+wildcards, boolean operators, or stemming/lemmatization (yet). I might add some
+of these features in the future, but I wrote OpenOrb in a single day so I'm
+keeping it simple for now!</p>
+
+<p>The success of a search on OpenOrb suffers from the same limitations as RSS
+in general - people and software have different, and sometimes weird, opinions
+on how to present structured data. If a feed <a
+href="https://nora.codes/post/adding-full-post-content-to-my-rss-feed/">doesn't
+include full post content</a> (which it should!), then OpenOrb won't be able to
+index it. If a feed has a cut-off limit for how many posts are in it, OpenOrb
+will only know about the ones that it had time to save. Embrace the limitations
+of the messy open web, and tell your friends to stop deleting posts from their
+feeds.</p>
+
+<p>The OpenOrb icon is by <a href="https://thenounproject.com/icon/crystal-ball-5331537/">Maxicons from Noun Project</a> (CC BY 3.0).</p>
+
+{% endblock %}

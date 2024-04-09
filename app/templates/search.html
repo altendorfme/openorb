@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form action="/search" method="get" hx-get="/search" hx-trigger="submit" hx-target="body">
+    <div id="search-form-fields-wrapper">
+        <input type="text" name="query" value="{{ query }}" id="query" />
+        <div class="form-group">
+            <label for="sort">Sort by:</label>
+            <select name="sort" id="sort">
+                <option value="relevance" {% if sort == 'relevance' %}selected{% endif %}>Relevance</option>
+                <option value="date" {% if sort == 'date' %}selected{% endif %}>Date</option>
+            </select>
+        </div>
+        <button type="submit">Search</button>
+    </div>
+</form>
+
+{% if query %}
+    {% if not results %}
+        <p>No results found.</p>
+    {% endif %}
+    <ul id="results">
+        {% for result in results %}
+            <li class="result">
+                <main><a class="result__title" href="{{ result.link }}">{{ result.title }}</a></main>
+                <footer>{% if result.published_formatted %}<time class="result__published" datetime="{{ result.published }}">{{ result.published_formatted }}</time> &ndash; {% endif %}{% if result.author %}<span class="result__author">{{ result.author }}</span>, {% endif %}<a class="result__feed-link" href="{{ result.feed_link }}">{{ result.feed_title }}</a> <span class="result__score">({{ result.score | round(2) }})</span></footer>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% endblock %}
+
+{% block footer %}
+{% if query %}
+    <p>{% if result_cached %}These results came from cache.{% else %}These search results were freshly baked.{% endif %}{% if last_crawl != "None" %} Last crawl ran at {{ last_crawl }}.{% endif %}</p>
+{% endif %}
+{% endblock %}
+
