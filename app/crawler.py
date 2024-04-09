@@ -151,9 +151,13 @@ def cleanup_feeds():
 
 
 async def fetch_feed(session, url):
-    async with asyncio.timeout(10):
-        async with session.get(url) as response:
-            return await response.text()
+    try:
+        async with asyncio.timeout(10):
+            async with session.get(url) as response:
+                return await response.text()
+    except Exception as e:
+        print("Error fetching feed: " + str(e))
+        return ""
 
 
 async def parse_feeds() -> list[tuple[str, FeedParserOutput]]:
@@ -172,7 +176,7 @@ async def parse_feeds() -> list[tuple[str, FeedParserOutput]]:
 
 def insert_feeds(feeds: list[tuple[str, FeedParserOutput]]):
     for feed in feeds:
-        if "feed" not in feed[1]:
+        if "feed" not in feed[1] or not feed[1]["feed"]:
             print("Skipping feed due to parsing error")
             continue
         (feed_id, feed_existed) = get_or_insert_feed(feed[1]["feed"], feed[0])
