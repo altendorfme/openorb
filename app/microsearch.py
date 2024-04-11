@@ -3,6 +3,12 @@
 from collections import defaultdict
 from math import log
 import string
+import redis
+from config import load_config
+
+config = load_config()
+
+r = redis.Redis(host=config["redis_host"], port=6379, decode_responses=True)
 
 
 def update_url_scores(old: dict[str, float], new: dict[str, float]):
@@ -40,8 +46,16 @@ class SearchEngine:
 
     @property
     def avdl(self) -> float:
-        # todo: refactor this. it can be slow to compute it every time. compute it once and cache it
-        return sum(len(d) for d in self._documents.values()) / len(self._documents)
+        cached_avdl = r.get("avdl")
+        if cached_avdl:
+            return float(str(cached_avdl))
+        if self.number_of_documents == 0:
+            # Can't divide by zero (...yet)
+            return 0
+        avdl = sum(len(d)
+                   for d in self._documents.values()) / len(self._documents)
+        r.set("avdl", avdl)
+        return avdl
 
     def idf(self, kw: str) -> float:
         N = self.number_of_documents

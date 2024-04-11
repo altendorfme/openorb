@@ -25,11 +25,13 @@ def run_crawler(force=False):
         entries = crawler.fetch_entries()
         engine.bulk_index([(entry["link"], entry["content"])
                           for entry in entries])
+        # Clear Redis cache for the search engine
+        r.delete("avdl")
     return crawl_response
 
 
 # Run the crawler on startup
-t = threading.Thread(target=run_crawler)
+t = threading.Thread(target=run_crawler, args=(True,))
 t.start()
 
 
