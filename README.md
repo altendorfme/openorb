@@ -26,3 +26,9 @@ docker compose up -d
 ```
 
 OpenOrb will save its `index.db` SQLite database in the `data` folder. If you edit the config file, restart the stack by running the same command.
+
+## Crawling
+
+The OpenOrb Docker stack sets up a cron job which `curl`s the `/api/crawl` endpoint every hour. Anyone can `POST` to that endpoint to immediately schedule a crawl, but to prevent overloading an OpenOrb instance, the crawl won't run more often than once every 15 minutes. You could potentially DDoS an OpenOrb instance by spamming the `/api/crawl` endpoint with a bot, but that also goes for any other endpoint - exposing the `/api/crawl` endpoint is simple and relatively low-risk.
+
+If you're running OpenOrb without Docker, you may want to set up your own cron job based on the example in the `/cron` directory.

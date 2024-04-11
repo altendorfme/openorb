@@ -217,7 +217,7 @@ def fetch_entries() -> list[Entry]:
         "feeds.feed_url AS feed_link"
     ])
     documents = c.execute(f"SELECT {
-                          columns} FROM entries INNER JOIN feeds ON entries.feed_id = feeds.id ORDER BY entries.published DESC").fetchall()
+        columns} FROM entries INNER JOIN feeds ON entries.feed_id = feeds.id ORDER BY entries.published DESC").fetchall()
     conn.close()
     return documents
 
@@ -240,7 +240,7 @@ def fetch_entries_for_feed(feed_id: int) -> list[Entry]:
         "feeds.feed_url AS feed_link"
     ])
     documents = c.execute(f"SELECT {
-                          columns} FROM entries INNER JOIN feeds ON entries.feed_id = feeds.id WHERE feed_id = ? ORDER BY entries.published DESC", (feed_id,)).fetchall()
+        columns} FROM entries INNER JOIN feeds ON entries.feed_id = feeds.id WHERE feed_id = ? ORDER BY entries.published DESC", (feed_id,)).fetchall()
     conn.close()
     return documents
 
@@ -254,19 +254,21 @@ def fetch_feeds() -> list[Feed]:
     return feeds
 
 
-async def crawl():
+async def crawl(force=False) -> bool:
     create_db()
     cleanup_feeds()
 
     print("Crawling...")
 
-    last_crawl = r.get("last_crawl")
-    if last_crawl is not None:
-        last_crawl = datetime.fromisoformat(str(last_crawl))
-        if (datetime.now() - last_crawl).seconds < 60:
-            print("Crawling too soon, skipping")
-            return
+    if not force:
+        last_crawl = r.get("last_crawl")
+        if last_crawl is not None:
+            last_crawl = datetime.fromisoformat(str(last_crawl))
+            if (datetime.now() - last_crawl).seconds < 60 * 15:  # 15 minutes
+                print("Crawling too soon, skipping")
+                return False
 
     r.set("last_crawl", datetime.now().isoformat())
     feeds = await parse_feeds()
     insert_feeds(feeds)
+    return True

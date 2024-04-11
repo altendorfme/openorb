@@ -1,0 +1,1 @@
+0 * * * * curl -XPOST http://openorb:8000/api/crawl > /var/log/cron.log 2>&1

@@ -1,14 +1,13 @@
 import asyncio
-import atexit
 from datetime import datetime
 import hashlib
 import json
+import threading
 from flask import Flask, render_template, request
 import redis
 from config import load_config
 import crawler
 from microsearch import SearchEngine
-from apscheduler.schedulers.background import BackgroundScheduler
 
 config = load_config()
 
@@ -16,24 +15,22 @@ r = redis.Redis(host=config["redis_host"], port=6379, decode_responses=True)
 
 app = Flask(__name__)
 
-# Setup
-asyncio.run(crawler.crawl())
-entries = crawler.fetch_entries()
+entries = []
 engine = SearchEngine()
-engine.bulk_index([(entry["link"], entry["content"]) for entry in entries])
 
 
-def run_crawl():
-    asyncio.run(crawler.crawl())
+def run_crawler(force=False):
+    crawl_response = asyncio.run(crawler.crawl(force))
+    if crawl_response:
+        entries = crawler.fetch_entries()
+        engine.bulk_index([(entry["link"], entry["content"])
+                          for entry in entries])
+    return crawl_response
 
 
-# Schedule a crawl every 5 minutes
-scheduler = BackgroundScheduler()
-scheduler.add_job(run_crawl, 'interval', minutes=5)
-scheduler.start()
-
-# Shut down the scheduler when exiting the app
-atexit.register(lambda: scheduler.shutdown())
+# Run the crawler on startup
+t = threading.Thread(target=run_crawler)
+t.start()
 
 
 def hash(content):
@@ -121,6 +118,13 @@ def search():
 @app.route("/about")
 def about():
     return render_template("about.html")
+
+
+@app.route("/api/crawl", methods=["POST"])
+def api_crawl():
+    t = threading.Thread(target=run_crawler)
+    t.start()
+    return {"status": "ok"}
 
 
 if __name__ == '__main__':
