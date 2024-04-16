@@ -178,6 +178,12 @@ async def parse_feeds() -> list[tuple[str, FeedParserOutput]]:
 
     return feeds
 
+def get_feed_last_updated(feed: FeedParserOutput) -> datetime:
+    if "updated_parsed" in feed["feed"]:
+        return datetime(*feed["feed"]["updated_parsed"][:6])
+    # If the feed doesn't have an updated time, we'll use the latest entry time
+    latest_entry = max(feed["entries"], key=lambda x: x["published_parsed"])
+    return datetime(*latest_entry["published_parsed"][:6])
 
 def insert_feeds(feeds: list[tuple[str, FeedParserOutput]]):
     for feed in feeds:
@@ -188,10 +194,9 @@ def insert_feeds(feeds: list[tuple[str, FeedParserOutput]]):
         # Check if the feed last updated time is later than our last crawl time for this feed
         # If it is, we should crawl it again
         if feed_existed:
-            last_updated = feed[1]["feed"]["updated_parsed"] if "updated_parsed" in feed[1]["feed"] else None
+            last_updated = get_feed_last_updated(feed[1])
             print("Feed last updated: " + str(last_updated))
             if last_updated:
-                last_updated = datetime(*last_updated[:6])
                 last_crawl = r.get(f"last_crawl:{feed_id}")
                 if last_crawl is not None:
                     last_crawl = datetime.fromisoformat(str(last_crawl))
