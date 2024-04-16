@@ -23,15 +23,14 @@ def run_crawler(force=False):
     crawl_response = asyncio.run(crawler.crawl(force))
     if crawl_response:
         entries = crawler.fetch_entries()
-        engine.bulk_index([(entry["link"], entry["content"])
-                          for entry in entries])
+        engine.bulk_index([(entry["link"], entry["content"]) for entry in entries])
         # Clear Redis cache for the search engine
         r.delete("avdl")
     return crawl_response
 
 
 # Run the crawler on startup
-t = threading.Thread(target=run_crawler, args=(True,))
+t = threading.Thread(target=run_crawler, args=(True,))  # Force full crawl
 t.start()
 
 
@@ -51,7 +50,7 @@ def inject_config():
     return dict(config=config)
 
 
-@ app.route("/")
+@app.route("/")
 def redirect_to_search():
     return search()
 
@@ -65,7 +64,7 @@ def feeds():
     return render_template("feeds.html", feeds=feeds)
 
 
-@ app.route("/search")
+@app.route("/search")
 def search():
     query = request.args.get("query")
     query = query[:80].strip() if query else ""
@@ -90,31 +89,48 @@ def search():
     entries = crawler.fetch_entries()
     full_results = []
     for url, score in results.items():
-        entry = next(
-            (entry for entry in entries if entry["link"] == url), None)
+        entry = next((entry for entry in entries if entry["link"] == url), None)
         if not entry:
             continue
         # pprint.pprint(dict(entry))
-        full_results.append({
-            "title": entry["title"],
-            "link": entry["link"],
-            "score": score,
-            "author": entry["author"],
-            "published": entry["published"] if entry["published"] else datetime.now().isoformat(),
-            "published_formatted": datetime.strptime(entry["published"], "%Y-%m-%dT%H:%M:%S").strftime("%d %b %Y") if entry["published"] else None,
-            "feed_title": entry["feed_title"],
-            "feed_link": entry["feed_link"]
-        })
+        full_results.append(
+            {
+                "title": entry["title"],
+                "link": entry["link"],
+                "score": score,
+                "author": entry["author"],
+                "published": (
+                    entry["published"]
+                    if entry["published"]
+                    else datetime.now().isoformat()
+                ),
+                "published_formatted": (
+                    datetime.strptime(entry["published"], "%Y-%m-%dT%H:%M:%S").strftime(
+                        "%d %b %Y"
+                    )
+                    if entry["published"]
+                    else None
+                ),
+                "feed_title": entry["feed_title"],
+                "feed_link": entry["feed_link"],
+            }
+        )
     if sort == "date":
-        full_results = sorted(
-            full_results, key=lambda x: x["published"], reverse=True)
+        full_results = sorted(full_results, key=lambda x: x["published"], reverse=True)
     elif sort == "relevance":
-        full_results = sorted(
-            full_results, key=lambda x: x["score"], reverse=True)
+        full_results = sorted(full_results, key=lambda x: x["score"], reverse=True)
     full_results = [
-        result for result in full_results if result["score"] > config["score_threshold"]]
+        result for result in full_results if result["score"] > config["score_threshold"]
+    ]
     last_crawl = str(r.get("last_crawl")).split(".")[0]
-    return render_template("search.html", results=full_results, query=query, sort=sort, result_cached=result_cached, last_crawl=last_crawl)
+    return render_template(
+        "search.html",
+        results=full_results,
+        query=query,
+        sort=sort,
+        result_cached=result_cached,
+        last_crawl=last_crawl,
+    )
 
 
 @app.route("/about")
@@ -129,5 +145,5 @@ def api_crawl():
     return {"status": "ok"}
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
