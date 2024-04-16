@@ -1,6 +1,7 @@
 import asyncio
 import aiohttp
 from bs4 import BeautifulSoup
+from scraper import fetch_content
 import feedparser
 import sqlite3
 import hashlib
@@ -112,8 +113,12 @@ def insert_entry(feed_id, entry):
         content = entry["description"]
     cleaned_content = clean_content(content)
     if len(cleaned_content) == 0:
-        print("  Entry has no content, skipping: " + entry["title"])
-        return
+        print("  Entry has no content, attempting to scrape from article link")
+        content = fetch_content(entry["link"])
+        cleaned_content = clean_content(content)
+        if len(cleaned_content) == 0:
+            print("  Entry still has no content, skipping: " + entry["title"])
+            return
     content_type = entry["content"][0]["type"] if "content" in entry else None
     content_hash = hash(cleaned_content)
     entry_date = entry["published_parsed"] if "published_parsed" in entry else entry["updated_parsed"] if "updated_parsed" in entry else None
@@ -163,7 +168,7 @@ async def fetch_feed(session, url):
 async def parse_feeds() -> list[tuple[str, FeedParserOutput]]:
     feeds = []
 
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
         tasks = [fetch_feed(session, feed_url)
                  for feed_url in config["feeds"]]
         feed_responses = await asyncio.gather(*tasks)
