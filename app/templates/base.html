@@ -1,6 +1,6 @@
 <html lang="en">
     <head>
-        <title>OpenOrb</title>
+        <title>{{ config.instance_title|default('OpenOrb') }}</title>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link
@@ -23,9 +23,8 @@
             <h1>
                 <img
                     id="header__icon"
-                    src="{{ url_for('static', filename='crystal-ball.svg') }}"
-                />
-                OpenOrb
+                    src="{% if config.logo %}{{ config.logo }}{% else %}{{ url_for('static', filename='crystal-ball.svg') }}{% endif %}"
+                />{{ config.instance_title|default('OpenOrb') }}
             </h1>
             <nav>
                 <ul hx-boost="true">

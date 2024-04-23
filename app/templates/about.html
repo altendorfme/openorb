@@ -1,6 +1,12 @@
 {% extends 'base.html' %}
 
 {% block content %}
+{% if config.instance_info %}
+<h2>About this instance</h2>
+
+<p>{{ config.instance_info|safe }}</p>
+
+{% endif %}
 <h2>About OpenOrb</h2>
 
 <p>OpenOrb is a curated search engine for Atom and RSS feeds.</p>

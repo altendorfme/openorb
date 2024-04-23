@@ -1,19 +1,26 @@
-# Show at the top of the page.
+# Show at the top of every page.
 curator = "Orb Ponderer"
 curator_url = "https://pondering.orb"
 
+# Defaults to 'OpenOrb'
+# instance_title = ""
+
+# Shown on the 'About' page if provided.
 # instance_info = """
 #   <p>This is a multiline Paragraph</p>
 #
 #   <p>You can add as many lines as you need here.</p>
-# """
-# logo = 
+# ""
+
+# An image URL to replace the default logo - can be absolute
+# ('https://example.com/image.png') or relative ('/image.png')
+# logo = ""
 
 feeds = [
     "http://cavegirlgames.blogspot.com/feeds/posts/default",
     "https://tenfootpole.org/ironspike/?feed=rss2",
     "http://questingblog.com/feed/",
-    "https://goblinpunch.blogspot.com/feeds/posts/default"
+    "https://goblinpunch.blogspot.com/feeds/posts/default",
 ]
 
 # In search results, only show posts with a score of at least this value
