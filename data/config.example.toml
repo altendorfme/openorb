@@ -2,6 +2,13 @@
 curator = "Orb Ponderer"
 curator_url = "https://pondering.orb"
 
+# instance_info = """
+#   <p>This is a multiline Paragraph</p>
+#
+#   <p>You can add as many lines as you need here.</p>
+# """
+# logo = 
+
 feeds = [
     "http://cavegirlgames.blogspot.com/feeds/posts/default",
     "https://tenfootpole.org/ironspike/?feed=rss2",
