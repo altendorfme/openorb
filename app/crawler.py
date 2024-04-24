@@ -17,6 +17,7 @@ r = redis.Redis(host=config["redis_host"], port=6379, decode_responses=True)
 
 
 class FeedParserOutput(TypedDict):
+    bozo: int
     feed: dict
     entries: list[dict]
 
@@ -63,35 +64,39 @@ def create_db():
 def get_or_insert_feed(feed: dict, config_url: str) -> tuple[int, bool]:
     conn = sqlite3.connect("./data/index.db")
     c = conn.cursor()
-    maybe_feed = c.execute(
-        "SELECT * FROM feeds WHERE config_url = ?", (config_url,)).fetchone()
-    if maybe_feed:
-        print("Feed already exists: " + feed["title"])
-        return (maybe_feed[0], True)
-    feed_url = [link["href"] for link in feed["links"]
-                if link["rel"] == "self"] if "links" in feed else []
-    if len(feed_url) > 0:
-        feed_url = feed_url[0]
-    else:
-        feed_url = feed["link"]
-    feed_title = feed["title"] if "title" in feed and feed["title"] != "" else urlparse(
-        feed["link"]).netloc
-    c.execute("INSERT INTO feeds (site_url, feed_url, config_url, title) VALUES (?, ?, ?, ?)",
-              (feed["link"], feed_url, config_url, feed_title))
-    conn.commit()
-    conn.close()
-    print("Inserted feed: " + feed["title"])
-    last_row_id = c.lastrowid
-    if last_row_id:
+    try:
+        maybe_feed = c.execute(
+            "SELECT * FROM feeds WHERE config_url = ?", (config_url,)).fetchone()
+        if maybe_feed:
+            print("Feed already exists: " + feed["title"])
+            return (maybe_feed[0], True)
+        feed_url = [link["href"] for link in feed["links"]
+                    if link["rel"] == "self"] if "links" in feed else []
+        if len(feed_url) > 0:
+            feed_url = feed_url[0]
+        else:
+            feed_url = feed["link"]
+        feed_title = feed["title"] if "title" in feed and feed["title"] != "" else urlparse(
+            feed["link"]).netloc
+        c.execute("INSERT INTO feeds (site_url, feed_url, config_url, title) VALUES (?, ?, ?, ?)",
+                (feed["link"], feed_url, config_url, feed_title))
+        conn.commit()
+        conn.close()
+        print("Inserted feed: " + feed["title"])
+        last_row_id = c.lastrowid
+        if last_row_id:
+            return (last_row_id, False)
+        last_row_id = c.execute(
+            "SELECT id FROM feeds WHERE config_url = ?", (config_url,)).fetchone()[0]
         return (last_row_id, False)
-    last_row_id = c.execute(
-        "SELECT id FROM feeds WHERE config_url = ?", (config_url,)).fetchone()[0]
-    return (last_row_id, False)
-
-# From https://www.alexmolas.com/2024/02/05/a-search-engine-in-80-lines.html
+    except Exception as e:
+        print(f"Error inserting feed {config_url} {str(e)}")
 
 
 def clean_content(html_content):
+    """
+    From https://www.alexmolas.com/2024/02/05/a-search-engine-in-80-lines.html
+    """
     soup = BeautifulSoup(html_content, "html.parser")
     for script in soup(["script", "style"]):
         script.extract()
@@ -187,10 +192,15 @@ def get_feed_last_updated(feed: FeedParserOutput) -> datetime:
 
 def insert_feeds(feeds: list[tuple[str, FeedParserOutput]]):
     for feed in feeds:
-        if "feed" not in feed[1] or not feed[1]["feed"]:
-            print("Skipping feed due to parsing error")
+        print("==================")
+        if feed[1]["bozo"] or "feed" not in feed[1] or not feed[1]["feed"]:
+            print(f"Skipping feed {feed[0]} due to parsing error")
             continue
-        (feed_id, feed_existed) = get_or_insert_feed(feed[1]["feed"], feed[0])
+        feed_result = get_or_insert_feed(feed[1]["feed"], feed[0])
+        if not feed_result:
+            print(f"Skipping feed {feed[0]} due to insertion error")
+            continue
+        feed_id, feed_existed = feed_result
         # Check if the feed last updated time is later than our last crawl time for this feed
         # If it is, we should crawl it again
         if feed_existed:

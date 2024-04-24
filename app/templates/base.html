@@ -1,16 +1,32 @@
 <html lang="en">
     <head>
         <title>OpenOrb</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="icon" href="{{ url_for('static', filename='crystal-ball.svg') }}" type="image/svg+xml">
-        <meta name="description" content="A curated search engine for Atom and RSS feeds.">
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link
+            rel="icon"
+            href="{{ url_for('static', filename='crystal-ball.svg') }}"
+            type="image/svg+xml"
+        />
+        <meta
+            name="description"
+            content="A curated search engine for Atom and RSS feeds."
+        />
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='style.css') }}"
+        />
         <script src="https://unpkg.com/htmx.org@1.9.11"></script>
     </head>
     <body>
         <header>
-            <h1><img id="header__icon" src="{{ url_for('static', filename='crystal-ball.svg') }}" /> OpenOrb</h1>
+            <h1>
+                <img
+                    id="header__icon"
+                    src="{{ url_for('static', filename='crystal-ball.svg') }}"
+                />
+                OpenOrb
+            </h1>
             <nav>
                 <ul hx-boost="true">
                     <li><a href="{{ url_for('search') }}">Search</a></li>
@@ -20,12 +36,19 @@
             </nav>
         </header>
         {% if config.curator %}
-            <p>This instance of OpenOrb is curated by {% if config.curator_url %}<a href="{{ config.curator_url }}">{{ config.curator }}</a>{% else %}{{ config.curator }}{% endif %}.</p>
-        {% endif %}
-        {% block content %}{% endblock %}
+        <p>
+            This instance of OpenOrb is curated by {% if config.curator_url %}<a
+                href="{{ config.curator_url }}"
+                >{{ config.curator }}</a
+            >{% else %}{{ config.curator }}{% endif %}.
+        </p>
+        {% endif %} {% block content %}{% endblock %}
         <footer>
             {% block footer %}{% endblock %}
-            <p>OpenOrb v1.2.0. View the source at <a href="https://git.sr.ht/~lown/openorb">SourceHut</a>.
+            <p>
+                OpenOrb v1.2.1. View the source at
+                <a href="https://git.sr.ht/~lown/openorb">SourceHut</a>.
+            </p>
         </footer>
     </body>
 </html>
